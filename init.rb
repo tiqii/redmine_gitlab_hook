@@ -14,5 +14,5 @@ Redmine::Plugin.register :redmine_gitlab_hook do
     :prune => 'yes', 
     :auto_create => 'yes', 
     :fetch_updates => 'yes' 
-  }, :partial => 'settings/gitlab_settings'
+  }, :partial => 'settings/git_hook_settings'
 end
