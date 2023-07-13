@@ -99,9 +99,12 @@ class GitlabHookController < SysController
   def get_remote_url
     git_project = params[:project]
     raise ActiveRecord::RecordNotFound, "No remote_url found from hooks '#{git_project.to_s}'" if git_project.nil?
-    use_deploy_key = params[:use_deploy_key] == 'yes'
+
     token = Setting.plugin_redmine_gitlab_hook['use_deploy_token']
-    if !use_deploy_key || token.present?
+    logger.info(params[:ssh])
+    logger.info(params[:ssh] !='1')
+    logger.info(params[:ssh] != '1' && token.present?)
+    if params[:ssh] != '1' && token.present?
       url = git_project['http_url']
 
       uri = URI.parse(url)
