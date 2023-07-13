@@ -4,7 +4,6 @@ class GitlabHookController < SysController
 
   GIT_BIN = Redmine::Configuration[:scm_git_command] || 'git'
 
-
   def index
     if request.post?
       repository = find_repository
@@ -88,21 +87,37 @@ class GitlabHookController < SysController
 
 
   def get_repository_name
-    return params[:repository_name] && params[:repository_name].downcase
+    git_project = params[:project]
+    return git_project && git_project[:name]&.downcase
   end
 
-
-  def get_repository_namespace
-    return params[:repository_namespace] && params[:repository_namespace].downcase
+  def get_path_with_namespace
+    git_project = params[:project]
+    return git_project && git_project[:path_with_namespace]&.downcase
   end
 
+  def get_remote_url
+    git_project = params[:project]
+    raise ActiveRecord::RecordNotFound, "No remote_url found from hooks '#{git_project.to_s}'" if git_project.nil?
+    use_deploy_key = params[:use_deploy_key] == 'yes'
+    token = Setting.plugin_redmine_gitlab_hook['use_deploy_token']
+    if !use_deploy_key || token.present?
+      url = git_project['http_url']
 
-  # Gets the repository identifier from the querystring parameters and if that's not supplied, assume
-  # the GitLab project identifier is the same as the repository identifier.
+      uri = URI.parse(url)
+      uri.scheme = uri.scheme || 'http'
+      uri.user = token if token
+
+      return uri.to_s
+    else
+      return git_project['ssh_url']
+    end
+
+  end
+
   def get_repository_identifier
-    repo_namespace = get_repository_namespace
-    repo_name = get_repository_name || get_project_identifier
-    identifier = repo_namespace.present? ? "#{repo_namespace}_#{repo_name}" : repo_name
+    path_with_namespace = get_path_with_namespace
+    identifier = path_with_namespace.present? ? path_with_namespace.gsub("/", "_") : get_project_identifier
     return identifier
   end
 
@@ -113,7 +128,6 @@ class GitlabHookController < SysController
     raise ActiveRecord::RecordNotFound, 'Project identifier not specified' if identifier.nil?
     return identifier
   end
-
 
   # Finds the Redmine project in the database based on the given project identifier
   def find_project
@@ -151,15 +165,13 @@ class GitlabHookController < SysController
     raise TypeError, 'Local repository path is not set' unless Setting.plugin_redmine_gitlab_hook['local_repositories_path'].to_s.present?
 
     identifier = get_repository_identifier
-    remote_url = params[:repository_git_url]
+    remote_url = get_remote_url
     prefix = Setting.plugin_redmine_gitlab_hook['git_command_prefix'].to_s
 
     raise TypeError, 'Remote repository URL is null' unless remote_url.present?
 
     local_root_path = Setting.plugin_redmine_gitlab_hook['local_repositories_path']
-    repo_namespace = get_repository_namespace
-    repo_name = get_repository_name
-    local_url = File.join(local_root_path, repo_namespace, repo_name)
+    local_url = File.join(local_root_path, get_path_with_namespace+'.git')
     git_file = File.join(local_url, 'HEAD')
 
     unless File.exists?(git_file)

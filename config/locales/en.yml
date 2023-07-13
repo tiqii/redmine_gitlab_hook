@@ -16,6 +16,9 @@ en:
   git_command_prefix:
     label: Git command prefix
     description: 'If you need to add some additional parameters before git command use this field. For example if you want to use GIT_SSH parameter.'
+  use_deploy_token:
+    label: Use deployment token
+    description: 'Refresh the repository using the deployment token configured for the group. After configuration, the repository will be operated with HTTP protocol.'
   fetch_updates:
     label: Fetch updates from repository
     description: 'This option fetches updates from remote repository. Set it to "No" if repository shared (for example if Gitlab and Redmine on the same machine).'

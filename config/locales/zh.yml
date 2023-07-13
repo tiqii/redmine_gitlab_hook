@@ -16,6 +16,9 @@ zh:
   git_command_prefix:
     label: Git 命令前缀
     description: '如您需要在 git 命令之前添加上一些其他参数，请使用该选项（例如：您需要使用 GIT_SSH 参数的情况下）。'
+  use_deploy_token:
+    label: 使用部署令牌
+    description: '使用群组配置的部署令牌来刷新仓库，配置后会使用http协议来操作仓库'
   fetch_updates:
     label: 从存储库中获取更新
     description: '该选项用于从远端存储库中获取更新内容。 若存储库共享，请将其设置为“否”（例如，Gitlab 和 Redmine 在同一台设备上）。'

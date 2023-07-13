@@ -31,6 +31,12 @@
     </p>
 
     <p>
+      <%= content_tag(:label, l('use_deploy_token.label')) %>
+      <%= text_field_tag('settings[use_deploy_token]', settings['use_deploy_token'], :size => 50) %>
+      <em class="info"><%= l('use_deploy_token.description') %></em>
+    </p>
+
+    <p>
         <%= content_tag(:label, l('fetch_updates.label')) %>
         <%= check_box_tag('settings[fetch_updates]', 'yes', settings['fetch_updates'] == 'yes' ) %>
         <em class="info"><%= l('fetch_updates.description') %></em>
